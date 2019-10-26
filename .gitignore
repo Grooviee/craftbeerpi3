@@ -5,7 +5,6 @@ craftbeerpi.db
 *.pyc
 *.templog
 
-modules/plugins/*
 !modules/plugins/__init__.py
 *.pyc
 *.js
