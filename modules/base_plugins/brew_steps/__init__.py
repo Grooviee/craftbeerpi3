@@ -58,6 +58,8 @@ class MashStep(StepBase):
         # Check if timer finished and go to next step
         if self.is_timer_finished() == True:
             self.notify("Mash Step Completed!", "Starting the next step", timeout=None)
+            # if you dont want a beep sound comment out like :  # cbpi.MashStepEndBeep()
+            cbpi.MashStepEndBeep()
             self.next()
 
 
@@ -96,6 +98,8 @@ class MashInStep(StepBase):
         if self.get_kettle_temp(self.kettle) >= float(self.temp) and self.s is False:
             self.s = True
             self.notify("Step Temp Reached!", "Please press the next button to continue", timeout=None)
+            # if you dont want a beep sound comment out like :  # cbpi.MashInStepEndBeep()
+            cbpi.MashInStepEndBeep()
 
 
 
@@ -121,7 +125,10 @@ class ChilStep(StepBase):
             self.start_timer(int(self.timer) * 60)
 
         if self.is_timer_finished() == True:
+            # if you dont want a beep sound comment out like :  # cbpi.ChilStepEndBeep()
+            cbpi.ChilStepEndBeep()
             self.next()
+            
 
 @cbpi.step
 class PumpStep(StepBase):
@@ -149,6 +156,8 @@ class PumpStep(StepBase):
             self.start_timer(int(self.timer) * 60)
 
         if self.is_timer_finished() == True:
+            # if you dont want a beep sound comment out like :  # cbpi.PumpStepEndBeep()
+            cbpi.PumpStepEndBeep()  
             self.next()
 
 @cbpi.step
@@ -206,6 +215,7 @@ class BoilStep(StepBase):
             self.timer_end - (int(self.timer) * 60 - int(value) * 60)):
             self.__setattr__("hop_%s_added" % number, True)
             self.notify("Hop Alert", "Please add Hop %s" % number, timeout=None)
+            cpbi.HopAddBeep()
 
     def execute(self):
         '''
@@ -226,4 +236,6 @@ class BoilStep(StepBase):
         # Check if timer finished and go to next step
         if self.is_timer_finished() == True:
             self.notify("Boil Step Completed!", "Starting the next step", timeout=None)
+            # if you dont want a beep sound comment out like :  # cbpi.cbpi.BoilStepEndBeep()
+            cbpi.BoilStepEndBeep()
             self.next()

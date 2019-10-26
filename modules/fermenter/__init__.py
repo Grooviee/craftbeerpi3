@@ -223,8 +223,6 @@ class FermenterView(BaseView):
 
                     def run(instance):
                         instance.run()
-                        fermenter.state = not fermenter.state
-                        cbpi.emit("UPDATE_FERMENTER", cbpi.cache.get(self.cache_key).get(id))
 
                     t = cbpi.socketio.start_background_task(target=run, instance=instance)
                 fermenter.state = not fermenter.state

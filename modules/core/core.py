@@ -227,7 +227,34 @@ class CraftBeerPi(ActorAPI, SensorAPI):
     def beep(self):
         if self.buzzer is not None:
             self.buzzer.beep()
+    
+    def MashStepEndBeep(self):
+        if self.buzzer is not None:
+            self.buzzer.MashStepEndBeep()
 
+
+    def MashInStepEndBeep(self):
+        if self.buzzer is not None:
+            self.buzzer.MashInStepEndBeep()
+
+
+    def ChilStepEndBeep(self):
+        if self.buzzer is not None:
+            self.buzzer.ChilStepEndBeep()   
+
+
+    def PumpStepEndBeep(self):
+        if self.buzzer is not None:
+            self.buzzer.PumpStepEndBeep()
+
+
+    def BoilStepEndBeep(self):
+        if self.buzzer is not None:
+            self.buzzer.BoilStepEndBeep()       
+
+    def HopAddBeep(self):
+        if self.buzzer is not None:
+            self.buzzer.HopAddBeep() 
 
     def add_cache_callback(self, key,  method):
         method.callback = True

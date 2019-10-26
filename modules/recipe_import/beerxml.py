@@ -41,33 +41,31 @@ class BeerXMLImport(FlaskView):
                 return ('', 404)
         except Exception as e:
             self.api.notify(headline="Upload Failed", message="Failed to upload Beer xml", type="danger")
-            return ('', 500)
+            return (str(e), 500)
 
-    @route('/<int:id>', methods=['POST'])
+    @route('/<int:id>', methods=['POST', 'GET'])
     def load(self, id):
 
+        try: 
+            steps = self.getSteps(id)
+            boil_time_alerts = self.getBoilAlerts(id)
+            name = self.getRecipeName(id)
+            self.api.set_config_parameter("brew_name", name)
+            boil_time = self.getBoilTime(id)
+            mashstep_type = cbpi.get_config_parameter("step_mash", "MashStep")
+            mash_kettle = cbpi.get_config_parameter("step_mash_kettle", None)
 
-        steps = self.getSteps(id)
-        boil_time_alerts = self.getBoilAlerts(id)
-        name = self.getRecipeName(id)
-        self.api.set_config_parameter("brew_name", name)
-        boil_time = self.getBoilTime(id)
-        mashstep_type = cbpi.get_config_parameter("step_mash", "MashStep")
-        mash_kettle = cbpi.get_config_parameter("step_mash_kettle", None)
+            boilstep_type = cbpi.get_config_parameter("step_boil", "BoilStep")
+            boil_kettle = cbpi.get_config_parameter("step_boil_kettle", None)
+            boil_temp = 100 if cbpi.get_config_parameter("unit", "C") == "C" else 212
 
-        boilstep_type = cbpi.get_config_parameter("step_boil", "BoilStep")
-        boil_kettle = cbpi.get_config_parameter("step_boil_kettle", None)
-        boil_temp = 100 if cbpi.get_config_parameter("unit", "C") == "C" else 212
-
-        # READ KBH DATABASE
-        Step.delete_all()
-        StepView().reset()
-
-        try:
+            # READ KBH DATABASE
+            Step.delete_all()
+            StepView().reset()
 
             for row in steps:
                 Step.insert(**{"name": row.get("name"), "type": mashstep_type, "config": {"kettle": mash_kettle, "temp": float(row.get("temp")), "timer": row.get("timer")}})
-            Step.insert(**{"name": "ChilStep", "type": "ChilStep", "config": {"timer": 15}})
+            
             ## Add boiling step
             Step.insert(**{
                 "name": "Boil",
@@ -90,12 +88,13 @@ class BeerXMLImport(FlaskView):
             })
             ## Add Whirlpool step
             Step.insert(**{"name": "Whirlpool", "type": "ChilStep", "config": {"timer": 15}})
+
             StepView().reset()
             self.api.emit("UPDATE_ALL_STEPS", Step.get_all())
             self.api.notify(headline="Recipe %s loaded successfully" % name, message="")
         except Exception as e:
             self.api.notify(headline="Failed to load Recipe", message=e.message, type="danger")
-            return ('', 500)
+            return (str(e), 500)
 
         return ('', 204)
 
@@ -117,7 +116,7 @@ class BeerXMLImport(FlaskView):
             ## Hops which are not used in the boil step should not cause alerts
             if use != 'Aroma' and use != 'Boil':
                 continue
-
+        
             alerts.append(float(e.find('TIME').text))
 
         ## There might also be miscelaneous additions during boild time
@@ -126,9 +125,10 @@ class BeerXMLImport(FlaskView):
 
         ## Dedupe and order the additions by their time, to prevent multiple alerts at the same time
         alerts = sorted(list(set(alerts)))
-
+        
         ## CBP should have these additions in reverse
         alerts.reverse()
+        self.api.notify(headline="alerts use %s" % alerts, message="")
 
         return alerts
 
@@ -140,8 +140,11 @@ class BeerXMLImport(FlaskView):
                 temp = float(e.find("STEP_TEMP").text)
             else:
                 temp = round(9.0 / 5.0 * float(e.find("STEP_TEMP").text) + 32, 2)
+            name = "MashStep"
+            if (e.find("NAME") is not None):
+                name = e.find("NAME").text
 
-            steps.append({"name": e.find("NAME").text, "temp": temp, "timer": float(e.find("STEP_TIME").text)})
+            steps.append({"name": name, "temp": temp, "timer": float(e.find("STEP_TIME").text)})
 
         return steps
 

@@ -47,7 +47,7 @@ class ComplexEncoder(json.JSONEncoder):
         return None
 
 app.json_encoder = ComplexEncoder
-socketio = SocketIO(app, json=json, logging=False)
+socketio = SocketIO(app, json=json, logging=True)
 cbpi   = CraftBeerPi(app, socketio)
 
 app.logger.info("##########################################")
